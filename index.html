@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soil and Water Parameters Analyzer</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+ font-family:Arial,sans-serif;
+ background:#f3f8f4;
+ color:#24352a;
+ line-height:1.6;
+ padding:20px
+}
+
+.container{max-width:950px;margin:auto}
+
+.intro{
+ padding:28px 22px;
+ border-radius:22px;
+ background:linear-gradient(135deg,#e5f5e9,#f1f7f8);
+ margin-bottom:20px
+}
+
+h1{color:#17643e;margin-bottom:8px}
+
+.tabs{display:flex;gap:10px;margin-bottom:20px}
+
+.tab{
+ flex:1;padding:14px;border:none;border-radius:12px;
+ background:#dcebe0;color:#24563a;
+ font-weight:bold;cursor:pointer;font-size:16px
+}
+
+.tab.active{background:#17724c;color:white}
+
+.section{
+ background:white;padding:22px;margin-bottom:20px;
+ border-radius:18px;
+ box-shadow:0 5px 20px rgba(20,60,35,.06)
+}
+
+.section h2{color:#17643e;margin-bottom:15px}
+
+.param,.calculator{
+ padding:14px;border-left:4px solid #83c99a;
+ margin-bottom:12px;border-radius:5px;background:#f8fbf8
+}
+
+.param label,.calc-field label{
+ display:block;font-weight:bold;margin-bottom:5px
+}
+
+.param small,.calc-field small{
+ color:#65766a;display:block;margin-bottom:8px
+}
+
+.param input,.calc-field input{
+ width:100%;padding:12px;border:1px solid #cbd9ce;
+ border-radius:9px;font-size:16px;outline:none
+}
+
+.param input:focus,.calc-field input:focus{
+ border-color:#17724c
+}
+
+.ideal{color:#17724c;font-size:13px;margin-top:6px}
+
+.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+
+button.action{
+ border:none;border-radius:10px;padding:12px 18px;
+ background:#17724c;color:white;font-weight:bold;cursor:pointer
+}
+
+button.secondary{background:#e5eee7;color:#24563a}
+
+.verdict-card{
+ padding:20px;border-radius:15px;
+ background:#f2f7f3;border:1px solid #d9e7dc
+}
+
+.verdict-card[data-level="good"]{
+ background:#e7f7eb;border-color:#8ac99b
+}
+
+.verdict-card[data-level="fair"]{
+ background:#fff6df;border-color:#e8cb72
+}
+
+.verdict-card[data-level="poor"]{
+ background:#ffeded;border-color:#e6a2a2
+}
+
+.result{margin-top:15px}
+
+.result-item{
+ padding:12px;border-bottom:1px solid #e6eee8
+}
+
+.good{color:#17724c}
+.fair{color:#a47712}
+.poor{color:#bd3636}
+
+.hidden{display:none!important}
+
+.action-box{
+ margin-top:8px;padding:10px 12px;border-radius:8px;
+ background:#fffdf3;border:1px solid #ecdca0;font-size:14px
+}
+.action-box.poor-box{background:#fff5f5;border-color:#e6b4b4}
+.action-box ul{padding-left:20px;margin-top:4px}
+.action-box li{margin-bottom:3px}
+.summary-actions{
+ margin-top:15px;padding:16px;border-radius:12px;
+ background:#eef6f0;border:1px solid #cfe3d4
+}
+.summary-actions h3{color:#17643e;margin-bottom:6px}
+.summary-actions ul{padding-left:20px}
+
+.group-badge{
+ display:inline-block;padding:5px 10px;
+ border-radius:20px;background:#e0edf9;
+ color:#285b85;font-size:12px;margin-bottom:10px
+}
+
+.group-badge.soil{
+ background:#d9edcf;color:#286b36
+}
+
+.guide{
+ background:#f2f8f3;padding:15px;
+ border-radius:12px;margin-top:15px
+}
+
+.guide h3{color:#17643e;margin-bottom:8px}
+.guide ul{padding-left:20px}
+.guide li{margin-bottom:5px}
+
+.calc-heading{margin:18px 0 10px;color:#17643e}
+.calc-note{font-size:13px;color:#65766a;margin-bottom:12px}
+
+.calculator{
+ border-left-color:#3d9b70;
+ background:#f1f8f3
+}
+
+.calculator h3{color:#17643e;margin-bottom:5px}
+
+.calc-fields{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:10px;margin-top:12px
+}
+
+.calc-field{min-width:0}
+.calc-field label{font-size:14px}
+.calc-field input{background:white}
+
+.calc-formula{
+ font-size:13px;color:#53665a;
+ background:#e8f2eb;padding:10px;
+ border-radius:7px;margin:10px 0
+}
+
+.calc-work{
+ background:white;
+ border:1px solid #b9d9c2;
+ border-radius:10px;
+ padding:13px;
+ margin-top:12px;
+ white-space:pre-line;
+ overflow-wrap:anywhere;
+ font-size:14px;
+ line-height:1.9
+}
+
+.calc-work strong{color:#17643e}
+
+.calc-answer{
+ color:#126c3f;
+ font-size:17px;
+ font-weight:bold;
+ border-top:1px solid #cbd9ce;
+ margin-top:8px;
+ padding-top:8px
+}
+
+.calc-status{
+ font-size:13px;margin-top:8px;
+ color:#17643e;min-height:20px
+}
+
+.calc-button{margin-top:12px}
+
+.crop-section{margin-top:18px}
+.crop-section h3{color:#17643e;margin-bottom:4px}
+.crop-note{font-size:13px;color:#65766a;margin-bottom:10px}
+.crop-group{font-weight:bold;margin:14px 0 6px;font-size:15px}
+.crop-card{padding:12px 14px;border:1px solid #d9e7dc;border-radius:12px;background:#f8fbf8;margin-bottom:8px}
+.crop-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:bold}
+.crop-bar{height:8px;border-radius:6px;background:#e3ece5;margin:7px 0;overflow:hidden}
+.crop-bar span{display:block;height:100%;border-radius:6px}
+.crop-bar .hi{background:#2f9e5f}
+.crop-bar .mid{background:#e0b43a}
+.crop-detail{font-size:13px;color:#4c5f53}
+.crop-detail .ok{color:#17724c}
+.crop-detail .imp{color:#a47712}
+.crop-empty{padding:12px;border-radius:10px;background:#fff6df;border:1px solid #e8cb72;font-size:14px}
+
+footer{
+ text-align:center;color:#718075;
+ padding:20px;font-size:13px
+}
+
+@media(max-width:640px){
+ body{padding:12px}
+ .intro{padding:22px 16px}
+ .section{padding:16px}
+ .tabs{flex-direction:column}
+ .calc-fields{grid-template-columns:1fr}
+}
+
+#home{position:fixed;inset:0;z-index:1000;overflow:auto;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;
+ background:radial-gradient(ellipse at 50% 0%,rgba(42,143,176,.20),transparent 55%),radial-gradient(ellipse at 50% 100%,rgba(23,114,76,.22),transparent 55%),#f3f8f4;font-family:Georgia,"Times New Roman",serif;color:#17402b}
+#home main{max-width:620px;width:100%;display:flex;flex-direction:column;align-items:center;gap:22px}
+#home .logo{width:150px;height:150px;filter:drop-shadow(0 10px 18px rgba(23,114,76,.25))}
+#home h1{font-size:clamp(2rem,7vw,3.2rem);line-height:1.1;font-weight:700;color:#17402b;margin:0}
+#home h1 span{color:#17724c}
+#home p{color:#5b7264;font-size:1.05rem;line-height:1.6;max-width:480px;font-family:Arial,sans-serif;margin:0}
+#home .btn{display:inline-block;margin-top:6px;padding:15px 34px;border-radius:999px;background:#17724c;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-weight:700;font-size:1.05rem;box-shadow:0 8px 22px rgba(23,114,76,.3);transition:transform .15s,background .15s;cursor:pointer;border:none}
+#home .btn:hover,#home .btn:focus-visible{background:#0f5a3a;transform:translateY(-2px);outline:none}
+#app{display:none}
+.backhome{display:inline-block;margin:0 0 14px;padding:8px 16px;border:none;border-radius:999px;background:#dcebe0;color:#24563a;font-weight:bold;cursor:pointer;font-size:14px}
+</style>
+</head>
+
+<body>
+<div id="home">
+<main>
+  <svg class="logo" viewBox="0 0 200 200" role="img" aria-label="Soil and water logo">
+    <circle cx="100" cy="100" r="94" fill="none" stroke="#17724c" stroke-width="4" opacity=".35"/>
+    <path d="M100 22 C100 22 62 66 62 92 a38 38 0 0 0 76 0 C138 66 100 22 100 22Z" fill="#2a8fb0"/>
+    <path d="M84 88 a18 18 0 0 0 10 24" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+    <path d="M32 150 Q100 112 168 150 L168 160 Q100 190 32 160Z" fill="#8a5a36"/>
+    <path d="M32 150 Q100 112 168 150" fill="none" stroke="#6b4226" stroke-width="3"/>
+    <path d="M100 134 V116" stroke="#2f9e5f" stroke-width="4" stroke-linecap="round"/>
+    <path d="M100 124 C90 124 84 116 84 108 C94 108 100 114 100 124Z" fill="#3fb674"/>
+    <path d="M100 120 C110 120 116 112 116 104 C106 104 100 110 100 120Z" fill="#2f9e5f"/>
+  </svg>
+  <h1>Soil and Water <span>Parameters Analyzer</span></h1>
+  <p>Check key soil and water quality parameters in one place.</p>
+  <button class="btn" onclick="showApp()">Open the Analyzer &rarr;</button>
+</main>
+</div>
+<div id="app">
+<button class="backhome" onclick="showHome()">&larr; Home</button>
+
+<div class="container">
+
+<header class="intro">
+<h1>🌱 Water & Soil Quality Checker</h1>
+<p>Check water and soil quality using important parameters and understand how to improve them.</p>
+</header>
+
+<div class="tabs">
+<button class="tab active" onclick="switchTab('water',this)">💧 Water Quality</button>
+<button class="tab" onclick="switchTab('soil',this)">🌱 Soil Quality</button>
+</div>
+
+<section class="section">
+
+<div id="water">
+<span class="group-badge">WATER ANALYSIS</span>
+<h2>Water Parameters</h2>
+
+<h3 class="calc-heading">🧮 Water Calculations</h3>
+<p class="calc-note">
+Enter laboratory readings. The calculator will show the formula,
+substitution, mathematical steps and final answer.
+</p>
+
+<div id="waterCalculators"></div>
+
+<h3 class="calc-heading">📋 Final Water Readings</h3>
+<div id="waterInputs"></div>
+</div>
+
+<div id="soil" class="hidden">
+<span class="group-badge soil">SOIL ANALYSIS</span>
+<h2>Soil Parameters</h2>
+
+<h3 class="calc-heading">🧮 Soil Calculations</h3>
+<p class="calc-note">
+Enter laboratory readings to see the complete mathematical calculation.
+</p>
+
+<div id="soilCalculators"></div>
+
+<h3 class="calc-heading">📋 Final Soil Readings</h3>
+<div id="soilInputs"></div>
+</div>
+
+<div class="buttons">
+<button class="action" onclick="checkQuality()">Check Quality</button>
+<button class="action secondary" onclick="loadExample()">Load Example</button>
+<button class="action secondary" onclick="resetForm()">Reset</button>
+</div>
+
+</section>
+
+<section class="section">
+<h2>Overall Quality Result</h2>
+
+<div class="verdict-card" id="vcard" data-level="none">
+<h3 id="vtitle">Waiting for your readings</h3>
+<p id="vtext">Enter your readings and click Check Quality.</p>
+</div>
+
+<div class="result" id="results"></div>
+<div id="cropBox"></div>
+</section>
+
+<section class="section" id="waterGuide">
+<h2>💧 Water Parameter Guidance</h2>
+
+<div class="guide">
+<h3>1. Water pH</h3>
+<p>Measures whether water is acidic, neutral or alkaline.</p>
+<ul>
+<li>Below 6.5: Acidic</li>
+<li>6.5–8.5: General recommended range</li>
+<li>Above 8.5: Alkaline</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>2. Total Hardness</h3>
+<p>Measures dissolved calcium and magnesium in water.</p>
+<ul>
+<li>0–60 mg/L: Soft</li>
+<li>61–120 mg/L: Moderately hard</li>
+<li>121–200 mg/L: Hard</li>
+<li>Above 200 mg/L: Very hard</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>3. Turbidity</h3>
+<p>Measures the cloudiness of water caused by suspended particles.</p>
+<ul>
+<li>Below 1 NTU: Low turbidity</li>
+<li>1–5 NTU: Moderate turbidity</li>
+<li>Above 5 NTU: High turbidity</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>4. Total Dissolved Solids (TDS)</h3>
+<p>Measures dissolved substances in water.</p>
+<ul>
+<li>Below 300 mg/L: Generally low</li>
+<li>300–500 mg/L: Generally desirable</li>
+<li>501–1000 mg/L: Elevated</li>
+<li>Above 1000 mg/L: High</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>5. Chloride</h3>
+<p>Dissolved chloride salts; high levels give a salty taste and corrode pipes.</p>
+<ul>
+<li>Up to 250 mg/L: Acceptable</li>
+<li>251–1000 mg/L: Permissible only if no alternative</li>
+<li>Above 1000 mg/L: Not suitable</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>6. Sulphate</h3>
+<p>Comes from minerals and waste; high levels taste bitter and can act as a laxative.</p>
+<ul>
+<li>Up to 200 mg/L: Acceptable</li>
+<li>201–400 mg/L: Permissible only if no alternative</li>
+<li>Above 400 mg/L: Not suitable</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>7. Nitrate</h3>
+<p>Usually from fertiliser, sewage or septic leakage; harmful to infants.</p>
+<ul>
+<li>Up to 45 mg/L: Acceptable</li>
+<li>Above 45 mg/L: Not suitable (no relaxation)</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>8. Fluoride</h3>
+<p>Beneficial in small amounts, harmful in excess (fluorosis).</p>
+<ul>
+<li>Up to 1.0 mg/L: Acceptable</li>
+<li>1.1–1.5 mg/L: Permissible only if no alternative</li>
+<li>Above 1.5 mg/L: Not suitable</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>9. Total Alkalinity</h3>
+<p>Ability of water to neutralise acid, mainly from bicarbonates and carbonates.</p>
+<ul>
+<li>Up to 200 mg/L as CaCO₃: Acceptable</li>
+<li>201–600 mg/L: Permissible only if no alternative</li>
+<li>Above 600 mg/L: Not suitable</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>10. Calcium</h3>
+<p>Major hardness-causing mineral.</p>
+<ul>
+<li>Up to 75 mg/L: Acceptable</li>
+<li>76–200 mg/L: Permissible only if no alternative</li>
+<li>Above 200 mg/L: Not suitable</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>11. Magnesium</h3>
+<p>Second hardness-causing mineral; high levels taste bitter.</p>
+<ul>
+<li>Up to 30 mg/L: Acceptable</li>
+<li>31–100 mg/L: Permissible only if no alternative</li>
+<li>Above 100 mg/L: Not suitable</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>12. Iron</h3>
+<p>Common in groundwater; causes stains and a metallic taste.</p>
+<ul>
+<li>Up to 0.3 mg/L: Acceptable</li>
+<li>Above 0.3 mg/L: Not suitable (no relaxation)</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>13. Free Residual Chlorine</h3>
+<p>Chlorine left after disinfection that keeps water protected from germs.</p>
+<ul>
+<li>Below 0.2 mg/L: Too low for reliable disinfection</li>
+<li>0.2–1.0 mg/L: Recommended range</li>
+<li>Above 1.0 mg/L: Higher than usual; above 4 mg/L is too high</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>14. Ammonia</h3>
+<p>Signal of sewage or organic pollution.</p>
+<ul>
+<li>Up to 0.5 mg/L: Acceptable</li>
+<li>Above 0.5 mg/L: Possible contamination</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>15. Arsenic</h3>
+<p>A toxic element found naturally in some groundwater.</p>
+<ul>
+<li>Up to 0.01 mg/L: Acceptable</li>
+<li>0.011–0.05 mg/L: Permissible only if no alternative</li>
+<li>Above 0.05 mg/L: Not suitable</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>16. Dissolved Oxygen (DO)</h3>
+<p>Oxygen dissolved in water; low levels indicate organic pollution.</p>
+<ul>
+<li>6 mg/L or more: Healthy</li>
+<li>4–6 mg/L: Slightly low</li>
+<li>Below 4 mg/L: Poor</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>🚰 Water Use Suggestion</h3>
+<p>After you click Check Quality on the Water tab, the website tells you which uses the water suits, based on the readings you entered.</p>
+<ul>
+<li>Drinking and cooking (BIS IS 10500 limits)</li>
+<li>Bathing and washing clothes</li>
+<li>Irrigation of crops and gardens</li>
+<li>Drinking water for cattle and poultry</li>
+<li>Fish tank or fish farming</li>
+<li>Boiler and cooling use</li>
+<li>Mixing concrete for construction</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>Water Safety Note</h3>
+<p>These parameters alone cannot confirm that water is safe to drink. Microbiological and chemical testing is also necessary.</p>
+</div>
+</section>
+
+<section class="section hidden" id="soilGuide">
+<h2>🌱 Soil Parameter Guidance</h2>
+
+<div class="guide">
+<h3>1. Soil pH</h3>
+<p>Measures the acidity or alkalinity of soil.</p>
+<ul>
+<li>Below 5: Strongly acidic</li>
+<li>5–6: Moderately acidic</li>
+<li>6–7.5: Generally suitable for many crops</li>
+<li>Above 7.5: Alkaline</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>2. Soil Moisture</h3>
+<p>Measures the amount of water present in soil.</p>
+<ul>
+<li>Below 10%: Very dry</li>
+<li>10–20%: Low moisture</li>
+<li>20–60%: General screening range</li>
+<li>Above 60%: High moisture</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>3. Soil Electrical Conductivity (EC)</h3>
+<p>Measures the concentration of soluble salts in soil.</p>
+<ul>
+<li>Below 2 dS/m: Generally low salinity</li>
+<li>2–4 dS/m: Elevated salinity</li>
+<li>Above 4 dS/m: Salinity may affect sensitive crops</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>4. Soil Nitrogen</h3>
+<p>Nitrogen is an important nutrient required for plant growth.</p>
+<ul>
+<li>Below 20 mg/kg: Low illustrative value</li>
+<li>20–50 mg/kg: Moderate illustrative value</li>
+<li>Above 50 mg/kg: Relatively high illustrative value</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>5. Organic Matter</h3>
+<p>Organic matter consists of decomposed plant and animal materials.</p>
+<ul>
+<li>Below 1%: Low</li>
+<li>1–3%: Moderate</li>
+<li>3–5%: Good general reference</li>
+<li>Above 5%: High</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>6. Available Phosphorus</h3>
+<p>Phosphorus supports root development and flowering.</p>
+<ul>
+<li>Below 10 mg/kg: Low</li>
+<li>10–25 mg/kg: Moderate</li>
+<li>25–50 mg/kg: Illustrative good range</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>7. Available Potassium</h3>
+<p>Potassium helps plants regulate water and supports growth.</p>
+<ul>
+<li>Below 60 mg/kg: Low</li>
+<li>60–120 mg/kg: Moderate</li>
+<li>120–250 mg/kg: Illustrative good range</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>8. Soil Temperature</h3>
+<p>Measures the temperature of soil around plant roots.</p>
+<ul>
+<li>Below 5°C: Very cold</li>
+<li>5–15°C: Cool</li>
+<li>15–30°C: Generally favourable</li>
+<li>30–40°C: Warm to hot</li>
+<li>Above 40°C: Very hot</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>🌾 Crop Suggestion</h3>
+<p>After you click Check Quality on the Soil tab, the website compares your readings with the needs of common crops and lists the most suitable ones with a match percentage. Enter at least Soil pH (more readings give better suggestions).</p>
+<ul>
+<li>80% or more: Highly suitable</li>
+<li>60–79%: Suitable with some care or soil improvement</li>
+<li>Soil pH and salinity (EC) matter most; low nutrients can be corrected with fertiliser or compost</li>
+</ul>
+</div>
+
+<div class="guide">
+<h3>Soil Testing Note</h3>
+<p>Soil reference values vary with soil type, crop, climate and laboratory testing method. Follow local agricultural soil-test recommendations.</p>
+</div>
+</section>
+
+<footer>
+🌿 Educational Project – Water & Soil Quality Checker<br>
+General screening tool. Laboratory testing is recommended for accurate results.
+</footer>
+
+</div>
+
+</div>
+<script>
+var activeGroup="water";
+
+function $(id){
+ return document.getElementById(id);
+}
+
+var PARAMS=[
+{
+ group:"water",id:"ph",name:"Water pH",unit:"pH",
+ placeholder:"e.g. 7.2",ideal:"6.5 to 8.5",min:0,max:14,
+ rate:function(v){
+  if(v<6.5||v>8.5)
+   return{level:"poor",text:"pH is outside the general recommended range."};
+  return{level:"good",text:"pH is within the general recommended range."};
+ }
+},
+{
+ group:"water",id:"hardness",name:"Total Hardness",unit:"mg/L",
+ placeholder:"e.g. 150",ideal:"0 to 200 mg/L",min:0,max:2000,
+ rate:function(v){
+  if(v>300)return{level:"poor",text:"Water is very hard."};
+  if(v>200)return{level:"fair",text:"Water is moderately hard to hard."};
+  return{level:"good",text:"Hardness is within the general desirable range."};
+ }
+},
+{
+ group:"water",id:"turbidity",name:"Turbidity",unit:"NTU",
+ placeholder:"e.g. 0.5",ideal:"Below 1 NTU",min:0,max:1000,
+ rate:function(v){
+  if(v>5)return{level:"poor",text:"Water has high turbidity."};
+  if(v>=1)return{level:"fair",text:"Turbidity is above the preferred level."};
+  return{level:"good",text:"Turbidity is low."};
+ }
+},
+{
+ group:"water",id:"tds",name:"Total Dissolved Solids",unit:"mg/L",
+ placeholder:"e.g. 420",ideal:"Below 500 mg/L",min:0,max:10000,
+ rate:function(v){
+  if(v>1000)return{level:"poor",text:"TDS is high."};
+  if(v>500)return{level:"fair",text:"TDS is above the generally desirable level."};
+  return{level:"good",text:"TDS is within the general desirable range."};
+ }
+},
+{
+ group:"water",id:"chloride",name:"Chloride",unit:"mg/L",
+ placeholder:"e.g. 180",ideal:"Up to 250 mg/L",min:0,max:20000,
+ rate:function(v){
+  if(v>1000)return{level:"poor",text:"Chloride is above the permissible limit (salty, corrosive water)."};
+  if(v>250)return{level:"fair",text:"Chloride is above the acceptable limit."};
+  return{level:"good",text:"Chloride is within the acceptable limit."};
+ }
+},
+{
+ group:"water",id:"sulphate",name:"Sulphate",unit:"mg/L",
+ placeholder:"e.g. 120",ideal:"Up to 200 mg/L",min:0,max:5000,
+ rate:function(v){
+  if(v>400)return{level:"poor",text:"Sulphate is above the permissible limit."};
+  if(v>200)return{level:"fair",text:"Sulphate is above the acceptable limit."};
+  return{level:"good",text:"Sulphate is within the acceptable limit."};
+ }
+},
+{
+ group:"water",id:"nitrate",name:"Nitrate",unit:"mg/L",
+ placeholder:"e.g. 30",ideal:"Up to 45 mg/L",min:0,max:1000,
+ rate:function(v){
+  if(v>45)return{level:"poor",text:"Nitrate exceeds the limit (risk to infants)."};
+  return{level:"good",text:"Nitrate is within the limit."};
+ }
+},
+{
+ group:"water",id:"fluoride",name:"Fluoride",unit:"mg/L",
+ placeholder:"e.g. 0.8",ideal:"Up to 1.0 mg/L",min:0,max:50,
+ rate:function(v){
+  if(v>1.5)return{level:"poor",text:"Fluoride is above the permissible limit (fluorosis risk)."};
+  if(v>1.0)return{level:"fair",text:"Fluoride is above the acceptable limit."};
+  return{level:"good",text:"Fluoride is within the acceptable limit."};
+ }
+},
+{
+ group:"water",id:"alkalinity",name:"Total Alkalinity",unit:"mg/L as CaCO₃",
+ placeholder:"e.g. 180",ideal:"Up to 200 mg/L",min:0,max:5000,
+ rate:function(v){
+  if(v>600)return{level:"poor",text:"Alkalinity is above the permissible limit."};
+  if(v>200)return{level:"fair",text:"Alkalinity is above the acceptable limit."};
+  return{level:"good",text:"Alkalinity is within the acceptable limit."};
+ }
+},
+{
+ group:"water",id:"calcium",name:"Calcium",unit:"mg/L",
+ placeholder:"e.g. 60",ideal:"Up to 75 mg/L",min:0,max:2000,
+ rate:function(v){
+  if(v>200)return{level:"poor",text:"Calcium is above the permissible limit."};
+  if(v>75)return{level:"fair",text:"Calcium is above the acceptable limit."};
+  return{level:"good",text:"Calcium is within the acceptable limit."};
+ }
+},
+{
+ group:"water",id:"magnesium",name:"Magnesium",unit:"mg/L",
+ placeholder:"e.g. 25",ideal:"Up to 30 mg/L",min:0,max:2000,
+ rate:function(v){
+  if(v>100)return{level:"poor",text:"Magnesium is above the permissible limit."};
+  if(v>30)return{level:"fair",text:"Magnesium is above the acceptable limit."};
+  return{level:"good",text:"Magnesium is within the acceptable limit."};
+ }
+},
+{
+ group:"water",id:"iron",name:"Iron",unit:"mg/L",
+ placeholder:"e.g. 0.1",ideal:"Up to 0.3 mg/L",min:0,max:100,
+ rate:function(v){
+  if(v>0.3)return{level:"poor",text:"Iron is above the limit (staining, metallic taste)."};
+  return{level:"good",text:"Iron is within the acceptable limit."};
+ }
+},
+{
+ group:"water",id:"chlorine",name:"Free Residual Chlorine",unit:"mg/L",
+ placeholder:"e.g. 0.5",ideal:"0.2 to 1.0 mg/L",min:0,max:20,
+ rate:function(v){
+  if(v>4)return{level:"poor",text:"Chlorine is too high."};
+  if(v>1)return{level:"fair",text:"Chlorine is above the usual 1.0 mg/L limit."};
+  if(v<0.2)return{level:"fair",text:"Residual chlorine is too low for reliable disinfection."};
+  return{level:"good",text:"Residual chlorine is in the recommended range."};
+ }
+},
+{
+ group:"water",id:"ammonia",name:"Ammonia (as total ammonia-N)",unit:"mg/L",
+ placeholder:"e.g. 0.2",ideal:"Up to 0.5 mg/L",min:0,max:100,
+ rate:function(v){
+  if(v>0.5)return{level:"poor",text:"Ammonia is high; possible sewage or organic pollution."};
+  return{level:"good",text:"Ammonia is within the acceptable limit."};
+ }
+},
+{
+ group:"water",id:"arsenic",name:"Arsenic",unit:"mg/L",
+ placeholder:"e.g. 0.005",ideal:"Up to 0.01 mg/L",min:0,max:10,
+ rate:function(v){
+  if(v>0.05)return{level:"poor",text:"Arsenic is above the permissible limit (toxic)."};
+  if(v>0.01)return{level:"fair",text:"Arsenic is above the acceptable limit."};
+  return{level:"good",text:"Arsenic is within the acceptable limit."};
+ }
+},
+{
+ group:"water",id:"do",name:"Dissolved Oxygen (DO)",unit:"mg/L",
+ placeholder:"e.g. 6.5",ideal:"6 mg/L or more",min:0,max:20,
+ rate:function(v){
+  if(v<4)return{level:"poor",text:"Dissolved oxygen is low; likely organic pollution."};
+  if(v<6)return{level:"fair",text:"Dissolved oxygen is slightly low."};
+  return{level:"good",text:"Dissolved oxygen is healthy."};
+ }
+},
+{
+ group:"soil",id:"spH",name:"Soil pH",unit:"pH",
+ placeholder:"e.g. 6.6",ideal:"6.0 to 7.5",min:0,max:14,
+ rate:function(v){
+  if(v<5||v>8.5)return{level:"poor",text:"Soil is strongly acidic or alkaline."};
+  if(v<6||v>7.5)return{level:"fair",text:"Soil pH may not be ideal for some crops."};
+  return{level:"good",text:"Soil pH is suitable for many crops."};
+ }
+},
+{
+ group:"soil",id:"smoist",name:"Soil Moisture",unit:"%",
+ placeholder:"e.g. 38",ideal:"20 to 60%",min:0,max:100,
+ rate:function(v){
+  if(v<10||v>80)return{level:"poor",text:"Soil moisture may be too low or too high."};
+  if(v<20||v>60)return{level:"fair",text:"Soil moisture may need monitoring."};
+  return{level:"good",text:"Moisture is within the general screening range."};
+ }
+},
+{
+ group:"soil",id:"sec",name:"Soil Electrical Conductivity",unit:"dS/m",
+ placeholder:"e.g. 1.1",ideal:"Below 2 dS/m",min:0,max:100,
+ rate:function(v){
+  if(v>4)return{level:"poor",text:"High salinity may affect sensitive crops."};
+  if(v>2)return{level:"fair",text:"Soil salinity may affect some crops."};
+  return{level:"good",text:"EC is within the general screening range."};
+ }
+},
+{
+ group:"soil",id:"sn",name:"Soil Nitrogen",unit:"mg/kg",
+ placeholder:"e.g. 62",ideal:"Crop- and test-dependent",min:0,max:10000,
+ rate:function(v){
+  if(v<20)return{level:"poor",text:"Nitrogen may be low."};
+  if(v<50)return{level:"fair",text:"Nitrogen may be moderate."};
+  return{level:"good",text:"Nitrogen reading is relatively high for this illustrative screening."};
+ }
+},
+{
+ group:"soil",id:"organic",name:"Organic Matter",unit:"%",
+ placeholder:"e.g. 4.0",ideal:"3 to 5%",min:0,max:100,
+ rate:function(v){
+  if(v<1)return{level:"poor",text:"Very low organic matter."};
+  if(v<3)return{level:"fair",text:"Moderate organic matter."};
+  return{level:"good",text:"Good organic matter content for many soils."};
+ }
+},
+{
+ group:"soil",id:"phosphorus",name:"Available Phosphorus",unit:"mg/kg",
+ placeholder:"e.g. 35",ideal:"25 to 50 mg/kg",min:0,max:10000,
+ rate:function(v){
+  if(v<10)return{level:"poor",text:"Low phosphorus."};
+  if(v<25)return{level:"fair",text:"Moderate phosphorus."};
+  return{level:"good",text:"Good phosphorus availability for many crops."};
+ }
+},
+{
+ group:"soil",id:"potassium",name:"Available Potassium",unit:"mg/kg",
+ placeholder:"e.g. 160",ideal:"120 to 250 mg/kg",min:0,max:10000,
+ rate:function(v){
+  if(v<60)return{level:"poor",text:"Low potassium."};
+  if(v<120)return{level:"fair",text:"Moderate potassium."};
+  return{level:"good",text:"Good potassium availability for many crops."};
+ }
+},
+{
+ group:"soil",id:"soiltemp",name:"Soil Temperature",unit:"°C",
+ placeholder:"e.g. 24",ideal:"15 to 30°C",min:0,max:100,
+ rate:function(v){
+  if(v<5||v>40)return{level:"poor",text:"Temperature is outside the general comfortable range."};
+  if(v<15||v>30)return{level:"fair",text:"Temperature may be less favourable for some crops."};
+  return{level:"good",text:"Within a generally favourable soil temperature range."};
+ }
+}
+];
+
+var EXAMPLES={
+ ph:"7.6",hardness:"240",turbidity:"0.6",tds:"420",
+ chloride:"180",sulphate:"120",nitrate:"30",fluoride:"0.8",alkalinity:"180",calcium:"60",magnesium:"25",iron:"0.1",chlorine:"0.5",ammonia:"0.2",arsenic:"0.005",do:"6.5",
+ spH:"6.6",smoist:"38",sec:"1.1",sn:"62",
+ organic:"4.2",phosphorus:"35",potassium:"160",soiltemp:"24"
+};
+
+var CALCULATORS=[
+
+{
+ group:"water",
+ title:"Total Hardness – EDTA Titration",
+ target:"hardness",
+ formula:"Hardness (mg/L as CaCO₃) = (EDTA volume × EDTA molarity × 100086) ÷ Sample volume",
+ fields:[
+  {id:"hard_edta",label:"EDTA used (mL)",value:"12"},
+  {id:"hard_molarity",label:"EDTA molarity (mol/L)",value:"0.01"},
+  {id:"hard_sample",label:"Water sample volume (mL)",value:"50"}
+ ],
+ calculate:function(v){
+  if(v.hard_sample<=0||v.hard_molarity<=0)return null;
+  return v.hard_edta*v.hard_molarity*100086/v.hard_sample;
+ },
+ explain:function(v,r){
+  return [
+   "Step 1: Write the formula",
+   "Hardness = (V × M × 100086) ÷ Sample volume",
+   "Step 2: Substitute the values",
+   "= ("+v.hard_edta+" × "+v.hard_molarity+" × 100086) ÷ "+v.hard_sample,
+   "Step 3: Multiply",
+   "= "+fmt(v.hard_edta*v.hard_molarity*100086)+" ÷ "+v.hard_sample,
+   "Step 4: Divide",
+   "= "+fmt(r)+" mg/L as CaCO₃"
+  ];
+ }
+},
+
+{
+ group:"water",
+ title:"TDS – Gravimetric Method",
+ target:"tds",
+ formula:"TDS (mg/L) = (Final dish mass − Empty dish mass) × 1000000 ÷ Sample volume",
+ fields:[
+  {id:"tds_empty",label:"Empty dish mass (g)",value:"50"},
+  {id:"tds_final",label:"Dish + dried residue mass (g)",value:"50.021"},
+  {id:"tds_volume",label:"Water sample volume (mL)",value:"100"}
+ ],
+ calculate:function(v){
+  if(v.tds_volume<=0||v.tds_final<v.tds_empty)return null;
+  return (v.tds_final-v.tds_empty)*1000000/v.tds_volume;
+ },
+ explain:function(v,r){
+  var difference=v.tds_final-v.tds_empty;
+  return [
+   "Step 1: Write the formula",
+   "TDS = (Final mass − Empty mass) × 1000000 ÷ Sample volume",
+   "Step 2: Substitute the values",
+   "= ("+v.tds_final+" − "+v.tds_empty+") × 1000000 ÷ "+v.tds_volume,
+   "Step 3: Calculate the mass of residue",
+   "= "+fmt(difference)+" × 1000000 ÷ "+v.tds_volume,
+   "Step 4: Multiply",
+   "= "+fmt(difference*1000000)+" ÷ "+v.tds_volume,
+   "Step 5: Divide",
+   "= "+fmt(r)+" mg/L"
+  ];
+ }
+},
+
+{
+ group:"water",
+ title:"Chloride – Argentometric (Mohr) Titration",
+ target:"chloride",
+ formula:"Chloride (mg/L) = (AgNO₃ volume × Normality × 35450) ÷ Sample volume",
+ fields:[
+  {id:"cl_v",label:"AgNO₃ used (mL)",value:"5"},
+  {id:"cl_n",label:"AgNO₃ normality (N)",value:"0.0141"},
+  {id:"cl_s",label:"Water sample volume (mL)",value:"50"}
+ ],
+ calculate:function(v){
+  if(v.cl_s<=0||v.cl_n<=0)return null;
+  return v.cl_v*v.cl_n*35450/v.cl_s;
+ },
+ explain:function(v,r){
+  return [
+   "Step 1: Write the formula",
+   "Chloride = (V × N × 35450) ÷ Sample volume",
+   "Step 2: Substitute the values",
+   "= ("+v.cl_v+" × "+v.cl_n+" × 35450) ÷ "+v.cl_s,
+   "Step 3: Multiply",
+   "= "+fmt(v.cl_v*v.cl_n*35450)+" ÷ "+v.cl_s,
+   "Step 4: Divide",
+   "= "+fmt(r)+" mg/L"
+  ];
+ }
+},
+
+{
+ group:"water",
+ title:"Total Alkalinity – Acid Titration",
+ target:"alkalinity",
+ formula:"Alkalinity (mg/L as CaCO₃) = (Acid volume × Normality × 50000) ÷ Sample volume",
+ fields:[
+  {id:"alk_v",label:"Acid used to reach end point (mL)",value:"9"},
+  {id:"alk_n",label:"Acid normality (N)",value:"0.02"},
+  {id:"alk_s",label:"Water sample volume (mL)",value:"50"}
+ ],
+ calculate:function(v){
+  if(v.alk_s<=0||v.alk_n<=0)return null;
+  return v.alk_v*v.alk_n*50000/v.alk_s;
+ },
+ explain:function(v,r){
+  return [
+   "Step 1: Write the formula",
+   "Alkalinity = (V × N × 50000) ÷ Sample volume",
+   "Step 2: Substitute the values",
+   "= ("+v.alk_v+" × "+v.alk_n+" × 50000) ÷ "+v.alk_s,
+   "Step 3: Multiply",
+   "= "+fmt(v.alk_v*v.alk_n*50000)+" ÷ "+v.alk_s,
+   "Step 4: Divide",
+   "= "+fmt(r)+" mg/L as CaCO₃"
+  ];
+ }
+},
+
+{
+ group:"water",
+ title:"Calcium – EDTA Titration",
+ target:"calcium",
+ formula:"Calcium (mg/L) = (EDTA volume × EDTA molarity × 40080) ÷ Sample volume",
+ fields:[
+  {id:"ca_v",label:"EDTA used (mL)",value:"6"},
+  {id:"ca_m",label:"EDTA molarity (mol/L)",value:"0.01"},
+  {id:"ca_s",label:"Water sample volume (mL)",value:"50"}
+ ],
+ calculate:function(v){
+  if(v.ca_s<=0||v.ca_m<=0)return null;
+  return v.ca_v*v.ca_m*40080/v.ca_s;
+ },
+ explain:function(v,r){
+  return [
+   "Step 1: Write the formula",
+   "Calcium = (V × M × 40080) ÷ Sample volume",
+   "Step 2: Substitute the values",
+   "= ("+v.ca_v+" × "+v.ca_m+" × 40080) ÷ "+v.ca_s,
+   "Step 3: Multiply",
+   "= "+fmt(v.ca_v*v.ca_m*40080)+" ÷ "+v.ca_s,
+   "Step 4: Divide",
+   "= "+fmt(r)+" mg/L"
+  ];
+ }
+},
+
+{
+ group:"water",
+ title:"Magnesium – By Difference",
+ target:"magnesium",
+ formula:"Magnesium (mg/L) = (Total hardness − Calcium hardness) × 0.243",
+ fields:[
+  {id:"mg_th",label:"Total hardness (mg/L as CaCO₃)",value:"240"},
+  {id:"mg_cah",label:"Calcium hardness (mg/L as CaCO₃)",value:"120"}
+ ],
+ calculate:function(v){
+  if(v.mg_th<v.mg_cah)return null;
+  return (v.mg_th-v.mg_cah)*0.243;
+ },
+ explain:function(v,r){
+  var d=v.mg_th-v.mg_cah;
+  return [
+   "Step 1: Write the formula",
+   "Mg = (Total hardness − Calcium hardness) × 0.243",
+   "Step 2: Substitute the values",
+   "= ("+v.mg_th+" − "+v.mg_cah+") × 0.243",
+   "Step 3: Find magnesium hardness",
+   "= "+fmt(d)+" × 0.243",
+   "Step 4: Multiply",
+   "= "+fmt(r)+" mg/L"
+  ];
+ }
+},
+
+{
+ group:"soil",
+ title:"Soil Moisture – Gravimetric Method",
+ target:"smoist",
+ formula:"Moisture (%) = (Wet soil mass − Dry soil mass) ÷ Dry soil mass × 100",
+ fields:[
+  {id:"moist_wet",label:"Wet soil mass (g)",value:"30"},
+  {id:"moist_dry",label:"Oven-dry soil mass (g)",value:"24"}
+ ],
+ calculate:function(v){
+  if(v.moist_dry<=0||v.moist_wet<v.moist_dry)return null;
+  return (v.moist_wet-v.moist_dry)/v.moist_dry*100;
+ },
+ explain:function(v,r){
+  var difference=v.moist_wet-v.moist_dry;
+  return [
+   "Step 1: Write the formula",
+   "Moisture = (Wet mass − Dry mass) ÷ Dry mass × 100",
+   "Step 2: Substitute the values",
+   "= ("+v.moist_wet+" − "+v.moist_dry+") ÷ "+v.moist_dry+" × 100",
+   "Step 3: Calculate the water mass",
+   "= "+fmt(difference)+" ÷ "+v.moist_dry+" × 100",
+   "Step 4: Divide",
+   "= "+fmt(difference/v.moist_dry)+" × 100",
+   "Step 5: Multiply by 100",
+   "= "+fmt(r)+" %"
+  ];
+ }
+},
+
+{
+ group:"soil",
+ title:"Soil Nitrogen – Kjeldahl Titration",
+ target:"sn",
+ formula:"Nitrogen (mg/kg) = (Sample titre − Blank titre) × Normality × 14.007 × 1000 ÷ Soil mass × Dilution factor",
+ fields:[
+  {id:"n_sample",label:"Sample titre (mL)",value:"8"},
+  {id:"n_blank",label:"Blank titre (mL)",value:"1"},
+  {id:"n_normality",label:"Acid normality (N)",value:"0.01"},
+  {id:"n_weight",label:"Soil sample mass (g)",value:"5"},
+  {id:"n_dilution",label:"Dilution factor",value:"1"}
+ ],
+ calculate:function(v){
+  if(v.n_weight<=0||v.n_normality<=0||v.n_dilution<=0||v.n_sample<v.n_blank)return null;
+  return (v.n_sample-v.n_blank)*v.n_normality*14.007*1000/v.n_weight*v.n_dilution;
+ },
+ explain:function(v,r){
+  var titre=v.n_sample-v.n_blank;
+  var first=titre*v.n_normality*14.007*1000;
+  return [
+   "Step 1: Write the formula",
+   "N = (Sample titre − Blank titre) × N × 14.007 × 1000 ÷ Soil mass × Dilution factor",
+   "Step 2: Substitute the values",
+   "= ("+v.n_sample+" − "+v.n_blank+") × "+v.n_normality+" × 14.007 × 1000 ÷ "+v.n_weight+" × "+v.n_dilution,
+   "Step 3: Calculate titre difference",
+   "= "+fmt(titre),
+   "Step 4: Multiply",
+   "= "+fmt(first)+" ÷ "+v.n_weight+" × "+v.n_dilution,
+   "Step 5: Divide and apply dilution factor",
+   "= "+fmt(r)+" mg/kg"
+  ];
+ }
+},
+
+{
+ group:"soil",
+ title:"Organic Matter – Walkley-Black Method",
+ target:"organic",
+ formula:"Organic matter (%) = (Blank − Sample) × Normality × 0.003 × 100 ÷ Soil mass × 1.33 × 1.724",
+ fields:[
+  {id:"om_blank",label:"Blank titre (mL)",value:"20"},
+  {id:"om_sample",label:"Sample titre (mL)",value:"12"},
+  {id:"om_normality",label:"Titrant normality (N)",value:"1"},
+  {id:"om_weight",label:"Soil sample mass (g)",value:"1"}
+ ],
+ calculate:function(v){
+  if(v.om_weight<=0||v.om_normality<=0||v.om_blank<v.om_sample)return null;
+  var carbon=(v.om_blank-v.om_sample)*v.om_normality*0.003*100/v.om_weight*1.33;
+  return carbon*1.724;
+ },
+ explain:function(v,r){
+  var difference=v.om_blank-v.om_sample;
+  var carbon=difference*v.om_normality*0.003*100/v.om_weight;
+  var corrected=carbon*1.33;
+  return [
+   "Step 1: Write the formula",
+   "Organic matter = (Blank − Sample) × N × 0.003 × 100 ÷ Weight × 1.33 × 1.724",
+   "Step 2: Substitute the values",
+   "= ("+v.om_blank+" − "+v.om_sample+") × "+v.om_normality+" × 0.003 × 100 ÷ "+v.om_weight+" × 1.33 × 1.724",
+   "Step 3: Calculate titre difference",
+   "= "+fmt(difference),
+   "Step 4: Calculate initial organic carbon",
+   "= "+fmt(carbon)+" %",
+   "Step 5: Apply correction factor 1.33",
+   "= "+fmt(corrected)+" %",
+   "Step 6: Convert organic carbon into organic matter",
+   "= "+fmt(corrected)+" × 1.724",
+   "= "+fmt(r)+" %"
+  ];
+ }
+},
+
+{
+ group:"soil",
+ title:"Available Phosphorus – Calibration Method",
+ target:"phosphorus",
+ formula:"Soil P (mg/kg) = [(Absorbance − Intercept) ÷ Slope] × Extract volume ÷ Soil mass × Dilution factor",
+ fields:[
+  {id:"p_abs",label:"Sample absorbance",value:"0.35"},
+  {id:"p_intercept",label:"Calibration intercept",value:"0"},
+  {id:"p_slope",label:"Calibration slope",value:"0.01"},
+  {id:"p_extract",label:"Extract volume (L)",value:"0.05"},
+  {id:"p_weight",label:"Soil mass (kg)",value:"0.005"},
+  {id:"p_dilution",label:"Dilution factor",value:"1"}
+ ],
+ calculate:function(v){
+  if(v.p_slope<=0||v.p_weight<=0||v.p_extract<=0||v.p_dilution<=0)return null;
+  var concentration=(v.p_abs-v.p_intercept)/v.p_slope;
+  if(concentration<0)return null;
+  return concentration*v.p_extract/v.p_weight*v.p_dilution;
+ },
+ explain:function(v,r){
+  var concentration=(v.p_abs-v.p_intercept)/v.p_slope;
+  var extract=concentration*v.p_extract;
+  return [
+   "Step 1: Write the formula",
+   "Soil P = [(Absorbance − Intercept) ÷ Slope] × Extract volume ÷ Soil mass × Dilution factor",
+   "Step 2: Substitute the values",
+   "= [("+v.p_abs+" − "+v.p_intercept+") ÷ "+v.p_slope+"] × "+v.p_extract+" ÷ "+v.p_weight+" × "+v.p_dilution,
+   "Step 3: Calculate concentration",
+   "= "+fmt(concentration)+" mg/L",
+   "Step 4: Multiply by extract volume",
+   "= "+fmt(extract),
+   "Step 5: Divide by soil mass and apply dilution",
+   "= "+fmt(r)+" mg/kg"
+  ];
+ }
+},
+
+{
+ group:"soil",
+ title:"Available Potassium – Calibration Method",
+ target:"potassium",
+ formula:"Soil K (mg/kg) = [(Instrument reading − Intercept) ÷ Slope] × Extract volume ÷ Soil mass × Dilution factor",
+ fields:[
+  {id:"k_reading",label:"Instrument reading",value:"0.4"},
+  {id:"k_intercept",label:"Calibration intercept",value:"0"},
+  {id:"k_slope",label:"Calibration slope",value:"0.01"},
+  {id:"k_extract",label:"Extract volume (L)",value:"0.05"},
+  {id:"k_weight",label:"Soil mass (kg)",value:"0.005"},
+  {id:"k_dilution",label:"Dilution factor",value:"1"}
+ ],
+ calculate:function(v){
+  if(v.k_slope<=0||v.k_weight<=0||v.k_extract<=0||v.k_dilution<=0)return null;
+  var concentration=(v.k_reading-v.k_intercept)/v.k_slope;
+  if(concentration<0)return null;
+  return concentration*v.k_extract/v.k_weight*v.k_dilution;
+ },
+ explain:function(v,r){
+  var concentration=(v.k_reading-v.k_intercept)/v.k_slope;
+  var extract=concentration*v.k_extract;
+  return [
+   "Step 1: Write the formula",
+   "Soil K = [(Reading − Intercept) ÷ Slope] × Extract volume ÷ Soil mass × Dilution factor",
+   "Step 2: Substitute the values",
+   "= [("+v.k_reading+" − "+v.k_intercept+") ÷ "+v.k_slope+"] × "+v.k_extract+" ÷ "+v.k_weight+" × "+v.k_dilution,
+   "Step 3: Calculate concentration",
+   "= "+fmt(concentration)+" mg/L",
+   "Step 4: Multiply by extract volume",
+   "= "+fmt(extract),
+   "Step 5: Divide by soil mass and apply dilution",
+   "= "+fmt(r)+" mg/kg"
+  ];
+ }
+}
+
+];
+
+function fmt(value){
+ return Number(value.toFixed(6)).toString();
+}
+
+/* What to do when a reading is a concern. Each function gets the value and returns a list of actions. */
+var ADVICE={
+ chloride:function(v){
+  return ["High chloride gives a salty taste and corrodes pipes and fittings.","Use RO or distillation, or blend with low-chloride water.","Check for seawater intrusion, sewage or road-salt contamination of the source."];
+ },
+ sulphate:function(v){
+  return ["High sulphate causes a bitter taste and can act as a laxative.","Use RO, distillation or anion-exchange treatment.","Check the source; gypsum-rich rock or industrial waste often raise sulphate."];
+ },
+ nitrate:function(v){
+  return ["Do not use this water for infants or for mixing baby formula (blue baby syndrome risk).","Use RO, ion-exchange or electrodialysis. Boiling does NOT remove nitrate; it concentrates it.","Find the source: fertiliser runoff, septic tanks or sewage seepage near the well."];
+ },
+ fluoride:function(v){
+  return ["Long-term excess fluoride causes dental and skeletal fluorosis.","Use activated alumina, bone char or RO treatment; boiling does not remove fluoride.","Use an alternative low-fluoride source for drinking and cooking."];
+ },
+ alkalinity:function(v){
+  return ["High alkalinity causes scaling and a bitter or soapy taste.","Use RO, or mild acid dosing under guidance.","Blend with low-alkalinity water if available."];
+ },
+ calcium:function(v){
+  return ["High calcium causes scale and increases hardness.","Use an ion-exchange softener or RO filter.","Descale kettles, geysers and pipes regularly."];
+ },
+ magnesium:function(v){
+  return ["High magnesium gives a bitter taste and can act as a laxative.","Use an ion-exchange softener or RO filter.","Retest hardness together with calcium."];
+ },
+ iron:function(v){
+  return ["Iron causes reddish-brown stains and a metallic taste.","Use aeration followed by sand filtration, or an iron-removal filter.","Clean storage tanks and pipes; iron bacteria may need chlorination before filtering."];
+ },
+ chlorine:function(v){
+  return v<0.2?
+   ["Residual chlorine is low, so disinfection may be inadequate.","Dose chlorine (or bleaching powder) to reach 0.2 to 1.0 mg/L after 30 minutes contact time.","Retest after dosing."]:
+   ["Chlorine is too high: let the water stand uncovered or use an activated carbon filter.","Reduce the chlorine dose and retest."];
+ },
+ ammonia:function(v){
+  return ["Ammonia often indicates sewage or organic pollution.","Check for leaking sewers, septic tanks and animal waste near the source.","Treat by breakpoint chlorination or ion exchange, then test for bacteria."];
+ },
+ arsenic:function(v){
+  return ["Arsenic is toxic: switch to a safe alternative source for drinking and cooking.","Use arsenic-removal adsorption filters or RO.","Get a certified lab test; long-term exposure causes skin lesions and cancer."];
+ },
+ do:function(v){
+  return ["Low dissolved oxygen suggests organic pollution or stagnation.","Aerate the water and clean the storage tank or source.","Look for sewage, decaying matter or industrial discharge upstream."];
+ },
+ ph:function(v){
+  return v<6.5?
+   ["Water is acidic: it can corrode pipes and taste metallic.","Add an alkaline neutraliser (soda ash or a calcite/neutralising filter).","Test again for lead and copper if old metal pipes are used."]:
+   ["Water is alkaline: it can cause scaling and a bitter taste.","Use a mild acid dosing (food-grade citric acid or a pH-correction system).","Check for high hardness or carbonates, which often come with high pH."];
+ },
+ hardness:function(v){
+  return ["Use a water softener, ion-exchange resin or RO filter.","Boiling removes only temporary hardness (bicarbonates).","Use descaling for kettles, geysers and pipes; hard water causes scale and uses more soap."].concat(v>300?["Very hard water: prefer a softener for the whole house or at least for drinking."]:[]);
+ },
+ turbidity:function(v){
+  return ["Let the water settle, then filter it through cloth or a sediment/sand filter.","Treat with alum (coagulation) for muddy water, then filter.","Disinfect after filtering (chlorine, boiling or UV) because cloudy water can hide germs.","Check the source for runoff, pipe damage or tank sediment, and clean the storage tank."];
+ },
+ tds:function(v){
+  return v>1000?
+   ["TDS is high: use an RO (reverse osmosis) purifier or distillation.","Avoid drinking it untreated; look for the source of salts (borewell depth, industrial or sewage seepage).","Get a full lab test for chemicals such as nitrate, fluoride and arsenic."]:
+   ["Use an RO purifier or a mix of RO and treated water to bring TDS under 500 mg/L.","Check whether the source is a borewell or shared tank and test again after a few days."];
+ },
+ spH:function(v){
+  return v<6?
+   ["Soil is acidic: add agricultural lime (calcium carbonate) or dolomite as per a soil test.","Add compost or well-rotted manure to buffer pH.","Avoid ammonium-based fertilisers, which acidify soil further."]:
+   ["Soil is alkaline: add elemental sulphur, gypsum or acidifying organic matter (compost, leaf mould).","Use acid-forming fertilisers such as ammonium sulphate.","Irrigate with good-quality water; alkaline irrigation water raises soil pH."];
+ },
+ smoist:function(v){
+  return v<20?
+   ["Soil is dry: irrigate in small, regular amounts (drip irrigation is best).","Add mulch (straw, dry leaves) to reduce evaporation.","Add organic matter to improve water-holding capacity."]:
+   ["Soil is too wet: improve drainage with channels, raised beds or sand/organic matter.","Reduce irrigation and avoid walking on or working wet soil.","Waterlogging causes root rot, so grow tolerant crops if drainage cannot be fixed."];
+ },
+ sec:function(v){
+  return ["High salinity: leach salts by applying extra good-quality water with proper drainage.","Add gypsum if sodium is high, and organic matter such as compost.","Grow salt-tolerant crops (barley, cotton, sugar beet) until EC falls.","Avoid over-fertilising and using salty irrigation water."];
+ },
+ sn:function(v){
+  return ["Nitrogen is low or moderate: apply urea or other N fertiliser in split doses, as per crop need.","Use organic sources such as compost, farmyard manure or green manure.","Grow legumes (beans, gram, dhaincha) in rotation to fix nitrogen naturally.","Avoid heavy single doses; excess nitrogen can leach and pollute water."];
+ },
+ organic:function(v){
+  return ["Add compost, farmyard manure, vermicompost or green manure regularly.","Leave crop residues in the field instead of burning them.","Use cover crops and mulching, and reduce excessive tillage."];
+ },
+ phosphorus:function(v){
+  return ["Apply phosphorus fertiliser (SSP or DAP) near the root zone, as per the soil test recommendation.","Add compost or bone meal as organic sources.","Keep soil pH between 6 and 7.5 so phosphorus remains available to plants."];
+ },
+ potassium:function(v){
+  return ["Apply potash (muriate of potash or sulphate of potash) as per the soil test recommendation.","Add compost, wood ash or banana peel compost in small gardens.","Split the dose on sandy soils because potassium washes out easily."];
+ },
+ soiltemp:function(v){
+  return v<15?
+   ["Soil is cold: use black plastic mulch or low tunnels to warm it.","Delay sowing until soil warms up, or choose cool-season crops."]:
+   ["Soil is hot: apply organic mulch and irrigate in the evening to cool the root zone.","Use shade nets or grow heat-tolerant crops, and avoid sowing in peak heat."];
+ }
+};
+
+function renderInputs(){
+ ["water","soil"].forEach(function(group){
+  var html="";
+
+  PARAMS.filter(function(p){
+   return p.group===group;
+  }).forEach(function(p){
+   html+=`
+   <div class="param">
+    <label for="${p.id}">${p.name} (${p.unit})</label>
+    <small>Enter your measured value or use the calculator above.</small>
+    <input type="number" id="${p.id}"
+     min="${p.min}" max="${p.max}"
+     step="any" placeholder="${p.placeholder}">
+    <div class="ideal">Recommended guide: ${p.ideal}</div>
+   </div>`;
+  });
+
+  $(group+"Inputs").innerHTML=html;
+ });
+}
+
+function renderCalculators(){
+ ["water","soil"].forEach(function(group){
+  var html="";
+
+  CALCULATORS.filter(function(c){
+   return c.group===group;
+  }).forEach(function(c){
+   var fields="";
+
+   c.fields.forEach(function(f){
+    fields+=`
+    <div class="calc-field">
+     <label for="${f.id}">${f.label}</label>
+     <input type="number" step="any"
+      id="${f.id}" value="${f.value}">
+    </div>`;
+   });
+
+   var index=CALCULATORS.indexOf(c);
+
+   html+=`
+   <div class="calculator">
+    <h3>${c.title}</h3>
+
+    <div class="calc-formula">
+     <strong>Formula:</strong><br>
+     ${c.formula}
+    </div>
+
+    <div class="calc-fields">${fields}</div>
+
+    <button class="action calc-button"
+     onclick="calculateParameter(${index})">
+     Calculate & Show Steps
+    </button>
+
+    <div class="calc-status" id="calcStatus${index}"></div>
+
+    <div class="calc-work hidden" id="calcWork${index}"></div>
+   </div>`;
+  });
+
+  $(group+"Calculators").innerHTML=html;
+ });
+}
+
+function calculateParameter(index){
+ var c=CALCULATORS[index];
+ var values={};
+
+ for(var i=0;i<c.fields.length;i++){
+  var field=c.fields[i];
+  var raw=$(field.id).value.trim();
+
+  if(raw===""){
+   alert("Please enter "+field.label+".");
+   return;
+  }
+
+  var num=Number(raw);
+
+  if(!Number.isFinite(num)){
+   alert("Please enter a valid number for "+field.label+".");
+   return;
+  }
+
+  if(num<0){
+   alert(field.label+" cannot be negative.");
+   return;
+  }
+
+  values[field.id]=num;
+ }
+
+ var result=c.calculate(values);
+
+ if(result===null||!Number.isFinite(result)||result<0){
+  alert("Please check your readings. The values are not valid for this calculation.");
+  return;
+ }
+
+ var finalResult=Number(result.toFixed(3));
+ var targetParam=PARAMS.find(function(p){
+  return p.id===c.target;
+ });
+
+ // Automatically fill the final reading
+ $(c.target).value=finalResult;
+
+ // Generate mathematical explanation
+ var steps=c.explain(values,result);
+
+ var workHTML="<strong>📘 Step-by-Step Calculation</strong>\n\n";
+
+ steps.forEach(function(step){
+  workHTML+=step+"\n";
+ });
+
+ workHTML+=
+  "\n<div class='calc-answer'>"+
+  "Final Answer = "+finalResult+" "+targetParam.unit+
+  "</div>";
+
+ var work=$("calcWork"+index);
+ work.innerHTML=workHTML;
+ work.classList.remove("hidden");
+
+ $("calcStatus"+index).textContent=
+  "✓ Calculation completed. Answer added to "+targetParam.name+".";
+}
+
+function switchTab(group,button){
+ activeGroup=group;
+
+ $("water").classList.toggle("hidden",group!=="water");
+ $("soil").classList.toggle("hidden",group!=="soil");
+
+ $("waterGuide").classList.toggle("hidden",group!=="water");
+ $("soilGuide").classList.toggle("hidden",group!=="soil");
+
+ document.querySelectorAll(".tab").forEach(function(tab){
+  tab.classList.remove("active");
+ });
+
+ button.classList.add("active");
+
+ clearResults();
+}
+
+function clearResults(){
+ $("results").innerHTML="";
+ $("cropBox").innerHTML="";
+ $("vcard").setAttribute("data-level","none");
+ $("vtitle").textContent="Waiting for your readings";
+ $("vtext").textContent="Enter your readings and click Check Quality.";
+}
+
+function checkQuality(){
+ var rated=[];
+
+ var params=PARAMS.filter(function(p){
+  return p.group===activeGroup;
+ });
+
+ for(var i=0;i<params.length;i++){
+  var p=params[i];
+  var value=$(p.id).value.trim();
+
+  if(value==="")continue;
+
+  var number=Number(value);
+
+  if(!Number.isFinite(number)||number<p.min||number>p.max){
+   alert("Please enter a valid value for "+p.name+".");
+   return;
+  }
+
+  var rating=p.rate(number);
+
+  rated.push({
+   id:p.id,
+   name:p.name,
+   value:number,
+   unit:p.unit,
+   level:rating.level,
+   text:rating.text
+  });
+ }
+
+ if(rated.length===0){
+  alert("Please enter at least one reading.");
+  return;
+ }
+
+ showResults(rated);
+}
+
+function showResults(rated){
+ var poor=rated.filter(function(x){
+  return x.level==="poor";
+ }).length;
+
+ var fair=rated.filter(function(x){
+  return x.level==="fair";
+ }).length;
+
+ var total=activeGroup==="soil"?8:16;
+
+ var level="good";
+ var title="Good quality readings";
+ var message="All entered readings are within their recommended screening ranges.";
+
+ if(poor>0){
+  level="poor";
+  title=activeGroup==="soil"?
+   "Soil needs improvement":"Water needs further testing";
+
+  message=poor+" of "+rated.length+
+   " readings are outside the recommended screening ranges.";
+
+ }else if(fair>0){
+  level="fair";
+  title=activeGroup==="soil"?
+   "Soil needs some attention":"Water has some concerns";
+
+  message=fair+" of "+rated.length+" readings need attention.";
+ }
+
+ if(rated.length<total){
+  message+=" Enter the remaining "+(total-rated.length)+
+   " readings for a more complete assessment.";
+ }
+
+ $("vcard").setAttribute("data-level",level);
+ $("vtitle").textContent=title;
+ $("vtext").textContent=message;
+
+ var html="";
+
+ rated.forEach(function(item){
+  var advice="";
+  if(item.level!=="good"&&ADVICE[item.id]){
+   var steps=ADVICE[item.id](item.value);
+   advice="<div class='action-box "+(item.level==="poor"?"poor-box":"")+"'>"+
+    "<strong>🛠 What to do:</strong><ul>"+
+    steps.map(function(s){return "<li>"+s+"</li>";}).join("")+
+    "</ul></div>";
+  }
+
+  html+=`
+  <div class="result-item">
+   <strong>${item.name}:</strong> ${item.value} ${item.unit}<br>
+   <strong class="${item.level}">${item.level.toUpperCase()}</strong>
+   <br>${item.text}
+   ${advice}
+  </div>`;
+ });
+
+ var concerns=rated.filter(function(x){return x.level!=="good";});
+ if(concerns.length>0){
+  var general=activeGroup==="water"?
+   ["Retest after treatment to confirm the improvement.","Do not drink water with concerning readings until it is treated, and get a lab test for bacteria and chemicals."]:
+   ["Retest the soil after 2 to 3 months, once the corrections have had time to work.","Follow your local agricultural office or soil-testing lab recommendation for exact doses."];
+  html+="<div class='summary-actions'><h3>✅ Next steps</h3><p>Concerns found in: <strong>"+
+   concerns.map(function(x){return x.name;}).join(", ")+
+   "</strong>.</p><ul>"+
+   general.map(function(s){return "<li>"+s+"</li>";}).join("")+
+   "</ul></div>";
+ }
+
+ $("results").innerHTML=html;
+
+ if(activeGroup==="soil"){showCrops(rated);}else{showWaterUses(rated);}
+}
+
+function loadExample(){
+ PARAMS.forEach(function(p){
+  $(p.id).value=EXAMPLES[p.id];
+ });
+
+ clearResults();
+
+ $("vtitle").textContent="Example readings loaded";
+ $("vtext").textContent=
+  "Example values have been added. Click Check Quality to see the result.";
+}
+
+function resetForm(){
+ PARAMS.forEach(function(p){
+  $(p.id).value="";
+ });
+
+ CALCULATORS.forEach(function(c,index){
+  c.fields.forEach(function(f){
+   $(f.id).value=f.value;
+  });
+
+  $("calcStatus"+index).textContent="";
+  $("calcWork"+index).innerHTML="";
+  $("calcWork"+index).classList.add("hidden");
+ });
+
+ clearResults();
+}
+
+
+/* ---------- Crop suggestion ---------- */
+/* ph, temp, moist = [min,max]; ec = highest EC (dS/m) tolerated; om, n, p, k = minimum values wanted */
+var CROPS=[
+{name:"Rice (Paddy)",ph:[5.5,7.0],temp:[20,35],moist:[40,80],ec:3,om:2,n:20,p:10,k:60},
+{name:"Wheat",ph:[6.0,7.5],temp:[10,25],moist:[20,60],ec:6,om:1.5,n:20,p:15,k:80},
+{name:"Maize (Corn)",ph:[5.8,7.5],temp:[18,32],moist:[20,60],ec:1.7,om:2,n:30,p:15,k:80},
+{name:"Cotton",ph:[5.8,8.0],temp:[18,35],moist:[20,50],ec:7.7,om:1,n:20,p:10,k:60},
+{name:"Sugarcane",ph:[6.0,8.0],temp:[20,35],moist:[30,70],ec:1.7,om:2,n:30,p:15,k:100},
+{name:"Potato",ph:[5.0,6.5],temp:[10,22],moist:[30,60],ec:1.7,om:3,n:30,p:25,k:120},
+{name:"Tomato",ph:[6.0,7.0],temp:[18,30],moist:[30,60],ec:2.5,om:3,n:30,p:25,k:120},
+{name:"Onion",ph:[6.0,7.0],temp:[13,30],moist:[25,55],ec:1.2,om:2,n:25,p:20,k:100},
+{name:"Brinjal (Eggplant)",ph:[5.5,7.0],temp:[20,32],moist:[30,60],ec:1.5,om:2.5,n:30,p:20,k:100},
+{name:"Chilli",ph:[6.0,7.0],temp:[20,30],moist:[25,55],ec:1.5,om:2,n:25,p:20,k:100},
+{name:"Groundnut (Peanut)",ph:[5.8,7.0],temp:[20,32],moist:[20,45],ec:3.2,om:1,n:15,p:15,k:80},
+{name:"Soybean",ph:[6.0,7.0],temp:[20,30],moist:[25,55],ec:5,om:2,n:15,p:15,k:80},
+{name:"Chickpea (Gram)",ph:[6.0,8.0],temp:[15,30],moist:[15,40],ec:2,om:1,n:15,p:10,k:60},
+{name:"Mustard",ph:[6.0,7.5],temp:[10,25],moist:[15,45],ec:6,om:1,n:20,p:10,k:60},
+{name:"Barley",ph:[6.0,8.0],temp:[8,22],moist:[15,50],ec:8,om:1,n:15,p:10,k:60},
+{name:"Sorghum (Jowar)",ph:[5.5,8.0],temp:[20,35],moist:[15,50],ec:6.8,om:1,n:15,p:10,k:60},
+{name:"Pearl Millet (Bajra)",ph:[5.5,8.0],temp:[22,38],moist:[10,40],ec:6,om:0.5,n:10,p:8,k:50},
+{name:"Banana",ph:[6.0,7.5],temp:[22,35],moist:[35,70],ec:1.5,om:3,n:30,p:20,k:150},
+{name:"Turmeric",ph:[5.5,7.5],temp:[20,30],moist:[35,65],ec:1.5,om:3,n:30,p:20,k:120},
+{name:"Tea",ph:[4.5,5.5],temp:[15,30],moist:[40,70],ec:1.5,om:3,n:30,p:15,k:80}
+];
+
+/* score for a range value: 1 inside, falls to 0 over "tol" outside */
+function rangeScore(v,r,tol){
+ if(v>=r[0]&&v<=r[1])return 1;
+ var d=v<r[0]?r[0]-v:v-r[1];
+ return Math.max(0,1-d/tol);
+}
+
+function evaluateCrop(c,vals){
+ var parts=[],good=[],improve=[];
+ function add(label,w,score,note,fixable){
+  parts.push({w:w,s:score});
+  if(score>=0.9)good.push(label);
+  else improve.push(note);
+ }
+ if(vals.spH!==undefined){
+  var s1=rangeScore(vals.spH,c.ph,0.6);
+  add("pH",3,s1,"pH is "+(vals.spH<c.ph[0]?"too low":"too high")+" (needs "+c.ph[0]+"–"+c.ph[1]+")");
+ }
+ if(vals.sec!==undefined){
+  var s2=vals.sec<=c.ec?1:Math.max(0,1-(vals.sec-c.ec)/1.5);
+  add("salinity (EC)",3,s2,"EC is high (this crop tolerates up to "+c.ec+" dS/m)");
+ }
+ if(vals.soiltemp!==undefined){
+  var s3=rangeScore(vals.soiltemp,c.temp,4);
+  add("soil temperature",2,s3,"soil temperature is "+(vals.soiltemp<c.temp[0]?"low":"high")+" (needs "+c.temp[0]+"–"+c.temp[1]+"°C)");
+ }
+ if(vals.smoist!==undefined){
+  var s4=rangeScore(vals.smoist,c.moist,15);
+  add("moisture",1.5,s4,"moisture is "+(vals.smoist<c.moist[0]?"low: irrigate":"high: improve drainage")+" (needs "+c.moist[0]+"–"+c.moist[1]+"%)");
+ }
+ [["organic","om",1,"organic matter","%"],["sn","n",1,"nitrogen","mg/kg"],["phosphorus","p",1,"phosphorus","mg/kg"],["potassium","k",1,"potassium","mg/kg"]].forEach(function(m){
+  if(vals[m[0]]!==undefined){
+   var need=c[m[1]];
+   var sc=vals[m[0]]>=need?1:vals[m[0]]/need;
+   add(m[3],m[2],sc,m[3]+" is low: add "+(m[0]==="organic"?"compost/manure":"fertiliser")+" (wants "+need+"+ "+m[4]+")");
+  }
+ });
+ var tw=0,sw=0,hardFail=false;
+ parts.forEach(function(x){tw+=x.w;sw+=x.w*x.s;});
+ var pct=tw?sw/tw*100:0;
+ // pH and salinity cannot be fixed quickly, so a bad value caps the score
+ if(vals.spH!==undefined&&rangeScore(vals.spH,c.ph,0.6)===0)hardFail=true;
+ if(vals.sec!==undefined&&vals.sec>c.ec+1.5)hardFail=true;
+ if(hardFail)pct=Math.min(pct,40);
+ var cen=0,cn=0;
+ if(vals.spH!==undefined){cen+=Math.abs(vals.spH-(c.ph[0]+c.ph[1])/2)/((c.ph[1]-c.ph[0])/2+0.01);cn++;}
+ if(vals.soiltemp!==undefined){cen+=Math.abs(vals.soiltemp-(c.temp[0]+c.temp[1])/2)/((c.temp[1]-c.temp[0])/2+0.01);cn++;}
+ return{crop:c,pct:Math.round(pct),good:good,improve:improve,centre:cn?cen/cn:0};
+}
+
+function cropCard(r){
+ var cls=r.pct>=80?"hi":"mid";
+ var d="";
+ if(r.good.length)d+="<span class='ok'>✔ Good: "+r.good.join(", ")+"</span>";
+ if(r.improve.length)d+=(d?"<br>":"")+"<span class='imp'>⚠ Improve: "+r.improve.join("; ")+"</span>";
+ return "<div class='crop-card'><div class='crop-top'><span>"+r.crop.name+"</span><span>"+r.pct+"% match</span></div>"+
+  "<div class='crop-bar'><span class='"+cls+"' style='width:"+r.pct+"%'></span></div>"+
+  "<div class='crop-detail'>"+d+"</div></div>";
+}
+
+function showCrops(rated){
+ var box=$("cropBox");
+ var vals={};
+ rated.forEach(function(x){vals[x.id]=x.value;});
+
+ if(vals.spH===undefined){
+  box.innerHTML="<div class='crop-section'><div class='crop-empty'>🌾 Enter at least the <strong>Soil pH</strong> reading to get crop suggestions. More readings give better suggestions.</div></div>";
+  return;
+ }
+
+ var results=CROPS.map(function(c){return evaluateCrop(c,vals);})
+  .sort(function(a,b){return (b.pct-a.pct)||(a.centre-b.centre);});
+
+ var best=results.filter(function(r){return r.pct>=80;});
+ var okay=results.filter(function(r){return r.pct>=60&&r.pct<80;});
+
+ var html="<div class='crop-section'><h3>🌾 Suitable Crops for This Soil</h3>"+
+  "<p class='crop-note'>Based on "+rated.length+" soil reading"+(rated.length>1?"s":"")+
+  ". General guidance only: the best crop also depends on climate, season, water and variety.</p>";
+
+ if(best.length){
+  html+="<div class='crop-group good'>✅ Highly suitable ("+best.length+")</div>";
+  best.slice(0,8).forEach(function(r){html+=cropCard(r);});
+ }
+ if(okay.length){
+  html+="<div class='crop-group fair'>🟡 Suitable with some care ("+okay.length+")</div>";
+  okay.slice(0,6).forEach(function(r){html+=cropCard(r);});
+ }
+ if(!best.length&&!okay.length){
+  html+="<div class='crop-empty'>No crop is a good match for these readings. Correct the main problem first (usually pH or salinity), then test again. Closest options:</div>";
+  results.slice(0,3).forEach(function(r){html+=cropCard(r);});
+ }
+ if(rated.length<8){
+  html+="<p class='crop-note' style='margin-top:10px'>Enter the remaining "+(8-rated.length)+" soil readings for more accurate suggestions.</p>";
+ }
+ html+="</div>";
+ box.innerHTML=html;
+}
+
+/* ---------- Water use suggestion ---------- */
+/* each rule returns {l:2 good | 1 careful | 0 poor, d: description} */
+function wUp(g,f){return function(v){
+ if(v<=g)return{l:2};
+ if(v<=f)return{l:1,d:"a little high"};
+ return{l:0,d:"too high"};};}
+function wLow(g,f){return function(v){
+ if(v>=g)return{l:2};
+ if(v>=f)return{l:1,d:"a little low"};
+ return{l:0,d:"too low"};};}
+function wRng(g1,g2,f1,f2){return function(v){
+ if(v>=g1&&v<=g2)return{l:2};
+ if(v>=f1&&v<=f2)return{l:1,d:v<g1?"a little low":"a little high"};
+ return{l:0,d:v<f1?"too low":"too high"};};}
+
+var USES=[
+{name:"Drinking & Cooking",icon:"🚰",
+ note:"Uses the BIS IS 10500 limits. Bacteria were not tested, so boil or disinfect the water and get a lab test before drinking.",
+ rules:{
+  ph:wRng(6.5,8.5,6.5,8.5),turbidity:wUp(1,5),tds:wUp(500,2000),hardness:wUp(200,600),
+  chloride:wUp(250,1000),sulphate:wUp(200,400),nitrate:wUp(45,45),fluoride:wUp(1,1.5),
+  iron:wUp(0.3,0.3),alkalinity:wUp(200,600),calcium:wUp(75,200),magnesium:wUp(30,100),
+  ammonia:wUp(0.5,0.5),arsenic:wUp(0.01,0.05),
+  chlorine:function(v){
+   if(v<0.2)return{l:1,d:"too low for safe disinfection"};
+   if(v<=1)return{l:2};
+   if(v<=4)return{l:1,d:"a little high"};
+   return{l:0,d:"too high"};}
+ }},
+{name:"Bathing & Washing Clothes",icon:"🧺",
+ note:"Hard or iron-rich water wastes soap and stains clothes, but is usually harmless for washing.",
+ rules:{
+  ph:wRng(6.5,8.5,6,9),hardness:wUp(150,300),iron:wUp(0.3,1),tds:wUp(1000,2500),turbidity:wUp(5,10)
+ }},
+{name:"Irrigation (Crops & Garden)",icon:"🌾",
+ note:"Based on FAO irrigation guidelines. Very salty water slowly damages soil and sensitive crops.",
+ rules:{
+  ph:wRng(6.5,8.4,6,9),tds:wUp(450,2000),chloride:wUp(140,350),iron:wUp(5,20),
+  fluoride:wUp(1,2),arsenic:wUp(0.1,0.1),turbidity:wUp(10,50)
+ }},
+{name:"Cattle & Poultry",icon:"🐄",
+ note:"Animals tolerate more salts than people, but nitrate, fluoride and sulphate can still harm them.",
+ rules:{
+  ph:wRng(6.5,8.5,6,9),tds:wUp(1000,3000),sulphate:wUp(500,1000),nitrate:wUp(100,300),
+  fluoride:wUp(2,3),arsenic:wUp(0.025,0.05)
+ }},
+{name:"Fish Tank / Fish Farming",icon:"🐟",
+ note:"Chlorine is toxic to fish: let tap water stand for a day or use a dechlorinator. Ammonia and low oxygen are the biggest risks.",
+ rules:{
+  ph:wRng(6.5,8.5,6,9),do:wLow(5,4),ammonia:wUp(0.5,1),chlorine:wUp(0.02,0.1),
+  hardness:wUp(300,500),nitrate:wUp(50,100),iron:wUp(0.3,1),turbidity:wUp(25,100)
+ }},
+{name:"Boiler & Cooling Systems",icon:"🏭",
+ note:"Hardness and salts form scale and cause corrosion in boilers and coolers. Softened or RO water works best.",
+ rules:{
+  ph:wRng(7,9,6.5,9.5),hardness:wUp(60,200),tds:wUp(500,1500),chloride:wUp(250,500),
+  iron:wUp(0.3,1),alkalinity:wUp(200,400),turbidity:wUp(5,20)
+ }},
+{name:"Concrete & Construction",icon:"🏗️",
+ note:"Based on IS 456 (concrete mixing). Chloride up to 500 mg/L is fine for reinforced concrete; up to 2000 mg/L only for plain concrete.",
+ rules:{
+  ph:wLow(6,6),chloride:wUp(500,2000),sulphate:wUp(400,400),tds:wUp(2000,3000)
+ }}
+];
+
+function paramInfo(id){
+ return PARAMS.filter(function(p){return p.id===id;})[0];
+}
+
+function evaluateUse(u,vals){
+ var checked=[],issues=[],level=2;
+ Object.keys(u.rules).forEach(function(id){
+  if(vals[id]===undefined)return;
+  var info=paramInfo(id);
+  var r=u.rules[id](vals[id]);
+  checked.push(info.name);
+  if(r.l<level)level=r.l;
+  if(r.l<2)issues.push({l:r.l,t:info.name+" ("+vals[id]+" "+info.unit+") is "+r.d});
+ });
+ issues.sort(function(a,b){return a.l-b.l;});
+ return{use:u,level:level,checked:checked,issues:issues};
+}
+
+function useCard(r,label){
+ var d="";
+ if(r.issues.length)d+="<span class='imp'>⚠ "+r.issues.map(function(i){return i.t;}).join("; ")+"</span><br>";
+ d+="<span class='ok'>✔ Checked: "+r.checked.join(", ")+"</span><br><em>"+r.use.note+"</em>";
+ return "<div class='crop-card'><div class='crop-top'><span>"+r.use.icon+" "+r.use.name+"</span><span>"+label+"</span></div>"+
+  "<div class='crop-detail' style='margin-top:6px'>"+d+"</div></div>";
+}
+
+function showWaterUses(rated){
+ var vals={};
+ rated.forEach(function(x){vals[x.id]=x.value;});
+
+ var results=USES.map(function(u){return evaluateUse(u,vals);})
+  .filter(function(r){return r.checked.length>0;});
+
+ var html="<div class='crop-section'><h3>🚰 What Can This Water Be Used For?</h3>"+
+  "<p class='crop-note'>Based on the "+rated.length+" reading"+(rated.length>1?"s":"")+
+  " you entered. A use is checked only against the readings that matter for it, so enter more readings for a safer answer.</p>";
+
+ var good=results.filter(function(r){return r.level===2;});
+ var care=results.filter(function(r){return r.level===1;});
+ var bad=results.filter(function(r){return r.level===0;});
+
+ if(good.length){
+  html+="<div class='crop-group good'>✅ Suitable ("+good.length+")</div>";
+  good.forEach(function(r){html+=useCard(r,"Suitable");});
+ }
+ if(care.length){
+  html+="<div class='crop-group fair'>🟡 Usable with care or treatment ("+care.length+")</div>";
+  care.forEach(function(r){html+=useCard(r,"With care");});
+ }
+ if(bad.length){
+  html+="<div class='crop-group poor'>🔴 Not recommended ("+bad.length+")</div>";
+  bad.forEach(function(r){html+=useCard(r,"Not suitable");});
+ }
+ if(!results.length){
+  html+="<div class='crop-empty'>Enter more readings (for example pH, TDS, hardness) to see suitable uses.</div>";
+ }
+ html+="<p class='crop-note' style='margin-top:10px'>This is a screening guide. Test for bacteria and get a lab report before drinking any water.</p></div>";
+ $("cropBox").innerHTML=html;
+}
+
+renderInputs();
+renderCalculators();
+
+</script>
+<script>
+function showApp(){document.getElementById('home').style.display='none';document.getElementById('app').style.display='block';window.scrollTo(0,0)}
+function showHome(){document.getElementById('app').style.display='none';document.getElementById('home').style.display='flex'}
+</script>
+</body>
+</html>
